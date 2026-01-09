@@ -50,7 +50,7 @@ def read_root():
     return {"status": "ArchiLink API is Live"}
 
 @app.post("/auth/login")
-def login(req: any, db: Session = Depends(get_db)):
+def login(req: Any, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == req.email).first()
     if not user: raise HTTPException(status_code=404, detail="User not found")
     return user
@@ -70,7 +70,7 @@ def get_architects(db: Session = Depends(get_db)):
     return results
 
 @app.post("/appointments")
-def create_appointment(appt: any, db: Session = Depends(get_db)):
+def create_appointment(appt: Any, db: Session = Depends(get_db)):
     new_appt = Appointment(**appt)
     db.add(new_appt)
     db.commit()
