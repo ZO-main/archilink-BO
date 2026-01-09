@@ -10,16 +10,17 @@ from typing import Any, Dict, List, Optional  # Pour corriger l'erreur 'Any' pr�
 # 1. CONFIGURATION BDD (Anti-Network-Unreachable)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Correction du préfixe pour SQLAlchemy 2.0
+# Force le protocole correct et ajoute des sécurités de connexion
+DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
 
-# Engine optimisé pour Render <-> Supabase
 engine = create_engine(
     DATABASE_URL,
-    pool_pre_ping=True, # Vérifie la connexion avant chaque requête
-    pool_recycle=300,   # Recrée les connexions toutes les 5 min
-    connect_args={"sslmode": "require"} # Obligatoire pour Supabase en ligne
+    pool_pre_ping=True,  # Vérifie si la connexion est morte avant d'échouer
+    pool_size=5,         # Limite le nombre de connexions pour rester en gratuit
+    max_overflow=10,
+    connect_args={"sslmode": "require"} # Sécurité obligatoire pour Supabase
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
