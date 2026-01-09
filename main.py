@@ -1,10 +1,11 @@
 import os
 from fastapi import FastAPI, Depends, HTTPException
-from fastapi.middleware.cors import 
-from typing import Any, Dict, List, Optional # Ajoutez 'Any' ici
+from fastapi.middleware.cors import CORSMiddleware  # Ajouté CORSMiddleware ici
 from sqlalchemy import create_engine, Column, String, Integer, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
+from typing import Any, Dict, List, Optional  # Pour corriger l'erreur 'Any' précédente
+
 
 # 1. CONFIGURATION BDD (Anti-Network-Unreachable)
 DATABASE_URL = os.getenv("DATABASE_URL")
