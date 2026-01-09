@@ -1,6 +1,7 @@
 import os
 from fastapi import FastAPI, Depends, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import 
+from typing import Any, Dict, List, Optional # Ajoutez 'Any' ici
 from sqlalchemy import create_engine, Column, String, Integer, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
