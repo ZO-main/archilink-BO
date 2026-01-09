@@ -27,17 +27,19 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # 2. INITIALISATION APP
-app = FastAPI(title="ArchiLink API")
+app = FastAPI()
 
-# Configuration CORS (Pont entre Vercel et Render)
+# --- CE BLOC DOIT ÊTRE AVANT TOUTES LES ROUTES ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # À restreindre à votre URL Vercel en prod
+    allow_origins=[
+        "https://archilink.vercel.app",  # Votre site Vercel
+        "http://localhost:3000",         # Pour vos tests locaux
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Autorise GET, POST, OPTIONS, etc.
+    allow_headers=["*"],  # Autorise tous les headers
 )
-
 # Fonction pour obtenir la session BDD
 def get_db():
     db = SessionLocal()
