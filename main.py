@@ -1,85 +1,85 @@
 import os
-from fastapi import fastapi, depends, httpexception
-from fastapi.middleware.cors import corsmiddleware
-from sqlalchemy import create_engine, column, string, integer, foreignkey
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import create_engine, Column, String, Integer, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, session
+from sqlalchemy.orm import sessionmaker, Session
 
-# 1. configuration bdd (anti-network-unreachable)
-database_url = os.getenv("database_url")
+# 1. CONFIGURATION BDD (Anti-Network-Unreachable)
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# correction du préfixe pour sqlalchemy 2.0
-if database_url and database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
+# Correction du préfixe pour SQLAlchemy 2.0
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
 
-# engine optimisé pour render <-> supabase
+# Engine optimisé pour Render <-> Supabase
 engine = create_engine(
-    database_url,
-    pool_pre_ping=true, # vérifie la connexion avant chaque requête
-    pool_recycle=300,   # recrée les connexions toutes les 5 min
-    connect_args={"sslmode": "require"} # obligatoire pour supabase en ligne
+    DATABASE_URL,
+    pool_pre_ping=True, # Vérifie la connexion avant chaque requête
+    pool_recycle=300,   # Recrée les connexions toutes les 5 min
+    connect_args={"sslmode": "require"} # Obligatoire pour Supabase en ligne
 )
 
-sessionlocal = sessionmaker(autocommit=false, autoflush=false, bind=engine)
-base = declarative_base()
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
 
-# 2. initialisation app
-app = fastapi(title="archilink api")
+# 2. INITIALISATION APP
+app = FastAPI(title="ArchiLink API")
 
-# configuration cors (pont entre vercel et render)
+# Configuration CORS (Pont entre Vercel et Render)
 app.add_middleware(
-    corsmiddleware,
-    allow_origins=["*"], # à restreindre à votre url vercel en prod
-    allow_credentials=true,
+    CORSMiddleware,
+    allow_origins=["*"], # À restreindre à votre URL Vercel en prod
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# fonction pour obtenir la session bdd
+# Fonction pour obtenir la session BDD
 def get_db():
-    db = sessionlocal()
+    db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
 
-# 3. vos routes (exemples à adapter selon vos fichiers)
-# --- routes ---
+# 3. VOS ROUTES (Exemples à adapter selon vos fichiers)
+# --- ROUTES ---
 @app.get("/")
 def read_root():
-    return {"status": "archilink api is live"}
+    return {"status": "ArchiLink API is Live"}
 
 @app.post("/auth/login")
-def login(req: any, db: session = depends(get_db)):
-    user = db.query(user).filter(user.email == req.email).first()
-    if not user: raise httpexception(status_code=404, detail="user not found")
+def login(req: any, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == req.email).first()
+    if not user: raise HTTPException(status_code=404, detail="User not found")
     return user
 
 @app.get("/architects")
-def get_architects(db: session = depends(get_db)):
-    profiles = db.query(architectprofile).all()
+def get_architects(db: Session = Depends(get_db)):
+    profiles = db.query(ArchitectProfile).all()
     results = []
     for p in profiles:
-        u = db.query(user).filter(user.id == p.user_id).first()
+        u = db.query(User).filter(User.id == p.user_id).first()
         if u:
             results.append({
-                "userid": p.user_id, "bio": p.bio, "location": p.location,
-                "rating": p.rating, "reviewcount": p.review_count,
-                "pricepersession": p.price_per_session, "user": u
+                "userId": p.user_id, "bio": p.bio, "location": p.location,
+                "rating": p.rating, "reviewCount": p.review_count,
+                "pricePerSession": p.price_per_session, "user": u
             })
     return results
 
 @app.post("/appointments")
-def create_appointment(appt: any, db: session = depends(get_db)):
-    new_appt = appointment(**appt)
+def create_appointment(appt: any, db: Session = Depends(get_db)):
+    new_appt = Appointment(**appt)
     db.add(new_appt)
     db.commit()
-    return true
+    return True
 
-@app.get("/slots/architect/{userid}")
-def get_slots(userid: str, db: session = depends(get_db)):
-    return db.query(availabilityslot).filter(availabilityslot.architect_id == userid).all()
+@app.get("/slots/architect/{userId}")
+def get_slots(userId: str, db: Session = Depends(get_db)):
+    return db.query(AvailabilitySlot).filter(AvailabilitySlot.architect_id == userId).all()
 
 
-# logic is identical for projects, messages and admin registry.
-# the database schema is fully established on supabase.
+# Logic is identical for Projects, Messages and Admin Registry.
+# The database schema is fully established on Supabase.
