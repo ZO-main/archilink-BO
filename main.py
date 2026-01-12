@@ -1,11 +1,14 @@
 import os
-from datetime import datetime  # <--- AJOUTEZ CECI
-from fastapi import FastAPI, Depends, HTTPException
+import uuid
+from datetime import datetime, timedelta
+from typing import List, Optional, Dict, Any, Union
+from fastapi import FastAPI, HTTPException, status, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import create_engine, Column, String, Integer, Float, Boolean, DateTime, ForeignKey, Text, Enum
+from pydantic import BaseModel, EmailStr
+from sqlalchemy import create_engine, Column, String, Integer, Float, Boolean, DateTime, ForeignKey, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-from typing import Any, Dict, List, Optional
+from sqlalchemy.pool import NullPool
 
 # 1. CONFIGURATION BDD (Anti-Network-Unreachable)
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -25,9 +28,6 @@ engine = create_engine(
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
-
-
-
 
 
 class User(Base):
@@ -436,3 +436,5 @@ def bulk_registry(data: List[Dict[str, Any]], db: Session = Depends(get_db)):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
+	
+	
