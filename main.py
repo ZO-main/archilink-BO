@@ -118,15 +118,21 @@ class OfficialArchitect(Base):
 # 2. INITIALISATION APP
 app = FastAPI()
 
-# --- CE BLOC DOIT ÊTRE AVANT TOUTES LES ROUTES ---
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+# Liste des origines autorisées (sans slash à la fin !)
+origins = [
+    "https://archilink.vercel.app",
+    "http://localhost:3000",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://archilink.vercel.app",  # Votre site Vercel
-        "http://localhost:3000",         # Pour vos tests locaux
-    ],
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],  # Autorise GET, POST, OPTIONS, etc.
+    allow_methods=["*"],  # Autorise tous les verbes (GET, POST, OPTIONS, etc.)
     allow_headers=["*"],  # Autorise tous les headers
 )
 
