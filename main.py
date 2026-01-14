@@ -29,6 +29,9 @@ engine = create_engine(
     connect_args={"sslmode": "require"} # Sécurité obligatoire pour Supabase
 )
 
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
 # --- UTILS ---
 def to_camel(string: str) -> str:
     parts = string.split('_')
@@ -184,11 +187,23 @@ class Announcement(Base):
     content = Column(Text, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
-Base.metadata.create_all(bind=engine)
 
-# --- APP ---
-app = FastAPI(title="ArchiLink API v3.1")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+# --- APP SETUP ---
+app = FastAPI(title="ArchiLink API Backend")
+
+# Liste des origines autorisées (sans slash à la fin !)
+origins = [
+    "https://archilink.vercel.app",
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # Autorise tous les verbes (GET, POST, OPTIONS, etc.)
+    allow_headers=["*"],  # Autorise tous les headers
+)
 
 def get_db():
     db = SessionLocal()
